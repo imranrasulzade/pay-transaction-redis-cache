@@ -5,6 +5,7 @@ import com.example.redis.entity.PayTransaction;
 import com.example.redis.queue.TransactionProducer;
 import com.example.redis.repository.PayTransactionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class TransactionService {
         LOGGER.info("Transaction sent to queue successfully, transactionId: {}", payload.getTransactionId());
     }
 
+    @SneakyThrows
     public void saveTransaction(PayTransaction payTransaction) {
         payTransaction.setStatus(2);
         boolean shouldSave = redisAdapter.markIfAbsent(payTransaction.getTransactionId());
@@ -35,6 +37,7 @@ public class TransactionService {
             LOGGER.error("Transaction save to db failed for duplicate, transactionId: {}", payTransaction.getTransactionId());
             return;
         }
+        Thread.sleep(20);
         payTransactionRepository.save(payTransaction);
         LOGGER.info("Save transaction to db success, transactionId: {}", payTransaction.getTransactionId());
     }
